@@ -1,22 +1,10 @@
-/**
- *   This file is part of Skript.
- *
- *  Skript is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Skript is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Copyright Peter Güttinger, SkriptLang team and contributors
- */
 package ch.njol.skript.lang;
+
+import java.lang.reflect.Array;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+import java.util.function.Function;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptAPIException;
@@ -25,6 +13,10 @@ import ch.njol.skript.classes.Changer;
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.classes.Changer.ChangerUtils;
 import ch.njol.skript.classes.ClassInfo;
+import ch.njol.skript.variables.VariablesStorage;
+import org.skriptlang.skript.lang.arithmetic.Arithmetics;
+import org.skriptlang.skript.lang.arithmetic.OperationInfo;
+import org.skriptlang.skript.lang.arithmetic.Operator;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.parser.ParserInstance;
 import ch.njol.skript.lang.util.SimpleExpression;
@@ -56,16 +48,12 @@ import org.skriptlang.skript.lang.converter.Converters;
 import org.skriptlang.skript.lang.script.Script;
 import org.skriptlang.skript.lang.script.ScriptWarning;
 
-import java.lang.reflect.Array;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.Function;
-
 public class Variable<T> implements Expression<T>, KeyReceiverExpression<T>, KeyProviderExpression<T> {
 
 	private final static String SINGLE_SEPARATOR_CHAR = ":";
 	public final static String SEPARATOR = SINGLE_SEPARATOR_CHAR + SINGLE_SEPARATOR_CHAR;
 	public final static String LOCAL_VARIABLE_TOKEN = "_";
+	private static final char[] reservedTokens = {'~', '.', '+', '$', '!', '&', '^', '*', '-'};
 
 	/**
 	 * Script this variable was created in.
@@ -115,7 +103,26 @@ public class Variable<T> implements Expression<T>, KeyReceiverExpression<T>, Key
 	 * @return true if the name is valid, false otherwise.
 	 */
 	public static boolean isValidVariableName(String name, boolean allowListVariable, boolean printErrors) {
-		name = name.startsWith(LOCAL_VARIABLE_TOKEN) ? "" + name.substring(LOCAL_VARIABLE_TOKEN.length()).trim() : "" + name.trim();
+		assert !name.isEmpty(): "Variable name should not be empty";
+		char first = name.charAt(0);
+		check_reserved_tokens:
+		for (char token : reservedTokens) {
+			if (first == token && printErrors) {
+				/*
+				A lot of people already use '-' so we want to skip this warning iff they're using it here
+				*/
+				if (first == '-') {
+					for (VariablesStorage store : Variables.getStores()) {
+						@Nullable Pattern pattern = store.getNamePattern();
+						if (pattern != null && pattern.pattern().equals("(?!-).*"))
+							continue check_reserved_tokens;
+					}
+				}
+				Skript.warning("The character '" + token + "' is reserved at the start of variable names, " +
+					"and may be restricted in future versions");
+			}
+		}
+		name = name.startsWith(LOCAL_VARIABLE_TOKEN) ? name.substring(LOCAL_VARIABLE_TOKEN.length()).trim() : name.trim();
 		if (!allowListVariable && name.contains(SEPARATOR)) {
 			if (printErrors)
 				Skript.error("List variables are not allowed here (error in variable {" + name + "})");
