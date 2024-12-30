@@ -1,21 +1,3 @@
-/**
- *   This file is part of Skript.
- *
- *  Skript is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Skript is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Copyright Peter Güttinger, SkriptLang team and contributors
- */
 package ch.njol.skript.expressions.base;
 
 import ch.njol.skript.Skript;
@@ -36,7 +18,11 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Utils;
 import ch.njol.util.Kleenean;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
+import org.skriptlang.skript.util.Priority;
 import org.bukkit.event.Event;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.converter.Converter;
 
@@ -65,6 +51,36 @@ import java.util.Map.Entry;
  */
 public class EventValueExpression<T> extends SimpleExpression<T> implements DefaultExpression<T> {
 
+	/**
+	 * A priority for {@link EventValueExpression}s.
+	 * They will be registered before {@link SyntaxInfo#COMBINED} expressions
+	 *  but after {@link SyntaxInfo#SIMPLE} expressions.
+	 */
+	@ApiStatus.Experimental
+	public static final Priority DEFAULT_PRIORITY = Priority.before(SyntaxInfo.COMBINED);
+
+	/**
+	 * Registers an event value expression with the provided pattern.
+	 * The syntax info will be forced to use the {@link #DEFAULT_PRIORITY} priority.
+	 * This also adds '[the]' to the start of the pattern.
+	 *
+	 * @param registry The SyntaxRegistry to register with.
+	 * @param expressionClass The EventValueExpression class being registered.
+	 * @param returnType The class representing the expression's return type.
+	 * @param pattern The pattern to match for creating this expression.
+	 * @param <T> The return type.
+	 * @param <E> The Expression type.
+	 * @return The registered {@link SyntaxInfo}.
+	 */
+	@ApiStatus.Experimental
+	public static <E extends EventValueExpression<T>, T> SyntaxInfo.Expression<E, T> register(SyntaxRegistry registry, Class<E> expressionClass, Class<T> returnType, String pattern) {
+		SyntaxInfo.Expression<E, T> info = SyntaxInfo.Expression.builder(expressionClass, returnType)
+				.priority(DEFAULT_PRIORITY)
+				.addPattern("[the] " + pattern)
+				.build();
+		registry.register(SyntaxRegistry.EXPRESSION, info);
+		return info;
+	}
 
 	/**
 	 * Registers an expression as {@link ExpressionType#EVENT} with the provided pattern.
