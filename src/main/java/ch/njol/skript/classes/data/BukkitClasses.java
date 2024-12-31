@@ -6,6 +6,7 @@ import ch.njol.skript.aliases.Aliases;
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.bukkitutil.BukkitUtils;
 import ch.njol.skript.bukkitutil.EnchantmentUtils;
+import ch.njol.skript.bukkitutil.EntityUtils;
 import ch.njol.skript.bukkitutil.ItemUtils;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.ConfigurationSerializer;
@@ -1566,6 +1567,22 @@ public class BukkitClasses {
 					"Individual attributes of a snapshot cannot be modified or retrieved.")
 				.requiredPlugins("Minecraft 1.20.2+")
 				.since("INSERT VERSION")
+				.parser(new Parser<>() {
+					@Override
+					public boolean canParse(ParseContext context) {
+						return false;
+					}
+
+					@Override
+					public String toString(EntitySnapshot snapshot, int flags) {
+						return EntityUtils.toSkriptEntityData(snapshot.getEntityType()).toString() + " snapshot";
+					}
+
+					@Override
+					public String toVariableNameString(EntitySnapshot snapshot) {
+						return toString(snapshot, 0);
+					}
+				})
 			);
 		}
 
