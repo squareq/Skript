@@ -23,13 +23,16 @@ import java.util.Map;
 import java.util.Set;
 
 import ch.njol.skript.log.SkriptLogger;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.skriptlang.skript.util.Validated;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Represents a config file.
  */
-public class Config implements Comparable<Config>, AnyNamed {
+public class Config implements Comparable<Config>, Validated, NodeNavigator, AnyNamed {
 
 	/**
 	 * One level of the indentation, e.g. a tab or 4 spaces.
@@ -52,6 +55,7 @@ public class Config implements Comparable<Config>, AnyNamed {
 
 	String fileName;
 	@Nullable Path file = null;
+	private final Validated validator = Validated.validator();
 
 	public Config(InputStream source, String fileName, @Nullable File file,
 				  boolean simple, boolean allowEmptySections, String defaultSeparator) throws IOException {
@@ -173,13 +177,10 @@ public class Config implements Comparable<Config>, AnyNamed {
 	 * @throws IOException If the file could not be written to.
 	 */
 	public void save(File file) throws IOException {
-		separator = defaultSeparator;
-		PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8);
-		try {
-			main.save(writer);
-		} finally {
+		this.separator = defaultSeparator;
+		try (final PrintWriter writer = new PrintWriter(file, StandardCharsets.UTF_8)) {
+			this.main.save(writer);
 			writer.flush();
-			writer.close();
 		}
 	}
 
@@ -231,7 +232,7 @@ public class Config implements Comparable<Config>, AnyNamed {
 			SectionNode newParent = node.getParent();
 			Preconditions.checkNotNull(newParent);
 
-			SectionNode parent = getNode(newParent.getPath());
+			SectionNode parent = getNode(newParent.getPathSteps());
 			Preconditions.checkNotNull(parent);
 
 			int index = node.getIndex();
@@ -402,6 +403,37 @@ public class Config implements Comparable<Config>, AnyNamed {
 		if (other == null)
 			return 0;
 		return fileName.compareTo(other.fileName);
+	}
+
+	@Override
+	public void invalidate() {
+		this.validator.invalidate();
+	}
+
+	@Override
+	public boolean valid() {
+		return validator.valid();
+	}
+
+	@Override
+	public @NotNull Node getCurrentNode() {
+		return main;
+	}
+
+	@Override
+	public @Nullable Node getNodeAt(@NotNull String @NotNull ... steps) {
+		return main.getNodeAt(steps);
+	}
+
+	@NotNull
+	@Override
+	public Iterator<Node> iterator() {
+		return main.iterator();
+	}
+
+	@Override
+	public @Nullable Node get(String step) {
+		return main.get(step);
 	}
 
 	/**
