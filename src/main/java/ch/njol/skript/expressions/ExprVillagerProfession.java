@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 	"set villager profession of {_villager} to librarian profession",
 	"delete villager profession of event-entity"
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 public class ExprVillagerProfession extends SimplePropertyExpression<LivingEntity, Profession> {
 
 	static {

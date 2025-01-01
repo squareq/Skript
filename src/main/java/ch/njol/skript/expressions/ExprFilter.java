@@ -42,7 +42,7 @@ import java.util.stream.StreamSupport;
 	"send \"congrats on being staff!\" to all players where [player input has permission \"staff\"]",
 	"loop (all blocks in radius 5 of player) where [block input is not air]:"
 })
-@Since("2.2-dev36, INSERT VERSION (parenthesis pattern)")
+@Since("2.2-dev36, 2.10 (parenthesis pattern)")
 public class ExprFilter extends SimpleExpression<Object> implements InputSource {
 
 	static {

@@ -39,7 +39,7 @@ import java.util.function.Consumer;
 	"shoot a pig from all players:",
 		"\tadd event-entity to {_projectiles::*}"
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 public class EffSecShoot extends EffectSection {
 
 	//TODO: Remove reflect method once 1.19 is no longer supported

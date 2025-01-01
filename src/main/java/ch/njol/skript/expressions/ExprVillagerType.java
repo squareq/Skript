@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 	"villager type of {_villager} = plains",
 	"set villager type of event-entity to plains"
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 public class ExprVillagerType extends SimplePropertyExpression<LivingEntity, Type> {
 
 	static {

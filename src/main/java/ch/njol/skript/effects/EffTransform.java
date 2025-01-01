@@ -49,7 +49,7 @@ import java.util.Set;
 	"# set all existing values of a list to 0:",
 	"transform {_list::*} to 0"
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 @Keywords("input")
 public class EffTransform extends Effect implements InputSource {
 

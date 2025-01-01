@@ -51,7 +51,7 @@ import java.util.stream.StreamSupport;
 	"",
 	"send {_a::*} # sends 2, 4, 6, 8, and 10",
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 public class SecFilter extends Section implements InputSource {
 
 	static {

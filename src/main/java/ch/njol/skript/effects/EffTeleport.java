@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 		"\tteleport the player to {server::spawn} retaining vehicle and passengers"
 })
 @RequiredPlugins("Paper 1.19+ (teleport flags)")
-@Since("1.0, INSERT VERSION (flags)")
+@Since("1.0, 2.10 (flags)")
 public class EffTeleport extends Effect {
 
 	private static final boolean TELEPORT_FLAGS_SUPPORTED = Skript.classExists("io.papermc.paper.entity.TeleportFlag");

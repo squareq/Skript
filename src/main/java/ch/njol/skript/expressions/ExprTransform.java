@@ -48,7 +48,7 @@ import java.util.stream.StreamSupport;
 	"# get a list of the sizes of all clans without manually looping",
 	"set {_clan-sizes::*} to indices of {clans::*} transformed using [{clans::%input%::size}]",
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 @Keywords("input")
 public class ExprTransform extends SimpleExpression<Object> implements InputSource {
 
