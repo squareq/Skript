@@ -4,7 +4,6 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.bukkitutil.InventoryUtils;
 import ch.njol.skript.command.CommandEvent;
-import ch.njol.skript.command.ScriptCommandEvent;
 import ch.njol.skript.events.bukkit.ScriptEvent;
 import ch.njol.skript.events.bukkit.SkriptStartEvent;
 import ch.njol.skript.events.bukkit.SkriptStopEvent;
@@ -445,7 +444,8 @@ public final class BukkitEventValues {
 			return inventories.toArray(new Inventory[0]);
 		});
 		// PrepareAnvilEvent
-		EventValues.registerEventValue(PrepareAnvilEvent.class, ItemStack.class, PrepareResultEvent::getResult);
+		if (Skript.classExists("com.destroystokyo.paper.event.inventory.PrepareResultEvent"))
+			EventValues.registerEventValue(PrepareAnvilEvent.class, ItemStack.class, PrepareResultEvent::getResult);
 		EventValues.registerEventValue(PrepareAnvilEvent.class, Inventory.class, PrepareAnvilEvent::getInventory);
 		// AnvilDamagedEvent
 		if (Skript.classExists("com.destroystokyo.paper.event.block.AnvilDamagedEvent")) {
