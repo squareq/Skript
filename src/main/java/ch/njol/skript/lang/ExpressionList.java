@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * A list of expressions.

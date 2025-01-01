@@ -1,33 +1,35 @@
 package ch.njol.skript.expressions;
 
+import ch.njol.skript.ServerPlatform;
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
-import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
-import ch.njol.skript.doc.Name;
-import ch.njol.skript.doc.Since;
+import ch.njol.skript.doc.*;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Yaw / Pitch")
 @Description({
-		"The yaw or pitch of a location or vector.",
-		"A yaw of 0 or 360 represents the positive z direction. Adding a positive number to the yaw of a player will rotate it clockwise.",
-		"A pitch of 90 represents the negative y direction, or downward facing. A pitch of -90 represents upward facing. Adding a positive number to the pitch will rotate the direction downwards.",
-		"Only Paper 1.19+ users may directly change the yaw/pitch of players."
+	"The yaw or pitch of a location or vector.",
+	"A yaw of 0 or 360 represents the positive z direction. Adding a positive number to the yaw of a player will rotate it clockwise.",
+	"A pitch of 90 represents the negative y direction, or downward facing. A pitch of -90 represents upward facing. Adding a positive number to the pitch will rotate the direction downwards.",
+	"Only Paper 1.19+ users may directly change the yaw/pitch of players."
 })
 @Examples({
-		"log \"%player%: %location of player%, %player's yaw%, %player's pitch%\" to \"playerlocs.log\"",
-		"set {_yaw} to yaw of player",
-		"set {_p} to pitch of target entity",
-		"set pitch of player to -90 # Makes the player look upwards, Paper 1.19+ only",
-		"add 180 to yaw of target of player # Makes the target look behind themselves"
+	"log \"%player%: %location of player%, %player's yaw%, %player's pitch%\" to \"playerlocs.log\"",
+	"set {_yaw} to yaw of player",
+	"set {_p} to pitch of target entity",
+	"set pitch of player to -90 # Makes the player look upwards, Paper 1.19+ only",
+	"add 180 to yaw of target of player # Makes the target look behind themselves"
 })
 @Since("2.0, 2.2-dev28 (vector yaw/pitch), 2.9.0 (entity changers)")
 @RequiredPlugins("Paper 1.19+ (player changers)")
@@ -56,18 +58,16 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 		if (object instanceof Entity) {
 			Location location = ((Entity) object).getLocation();
 			return usesYaw
-					? normalizeYaw(location.getYaw())
-					: location.getPitch();
-		} else if (object instanceof Location) {
-			Location location = (Location) object;
+				? normalizeYaw(location.getYaw())
+				: location.getPitch();
+		} else if (object instanceof Location location) {
 			return usesYaw
-					? normalizeYaw(location.getYaw())
-					: location.getPitch();
-		} else if (object instanceof Vector) {
-			Vector vector = ((Vector) object);
-			if (usesYaw)
-				return skriptYaw(getYaw(vector));
-			return skriptPitch(getPitch(vector));
+				? normalizeYaw(location.getYaw())
+				: location.getPitch();
+		} else if (object instanceof Vector vector) {
+			return usesYaw
+				? skriptYaw((getYaw(vector)))
+				: skriptPitch(getPitch(vector));
 		}
 		return null;
 	}
@@ -97,7 +97,7 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 		for (Object object : getExpr().getArray(event)) {
 			if (object instanceof Player && !SUPPORTS_PLAYERS)
 				continue;
-				
+
 			if (object instanceof Entity) {
 				changeForEntity((Entity) object, value, mode);
 			} else if (object instanceof Location) {
@@ -170,7 +170,7 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 		}
 	}
 
-	private void changeVector(Vector vector, float n, ChangeMode mode) {
+	private void changeForVector(Vector vector, float value, ChangeMode mode) {
 		float yaw = getYaw(vector);
 		float pitch = getPitch(vector);
 		switch (mode) {
@@ -178,23 +178,21 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 				value = -value;
 				// $FALL-THROUGH$
 			case ADD:
-				if (usesYaw)
-					yaw += n;
-				else
-					pitch -= n; // Negative because of Minecraft's / Skript's upside down pitch
-				Vector newVector = fromYawAndPitch(yaw, pitch).multiply(vector.length());
-				vector.copy(newVector);
+				if (usesYaw) {
+					yaw += value;
+				} else {
+					// Subtracting because of Minecraft's upside-down pitch.
+					pitch -= value;
+				}
 				break;
 			case SET:
 				if (usesYaw)
-					yaw = fromSkriptYaw(n);
+					yaw = fromSkriptYaw(value);
 				else
-					pitch = fromSkriptPitch(n);
-				newVector = fromYawAndPitch(yaw, pitch).multiply(vector.length());
-				vector.copy(newVector);
+					pitch = fromSkriptPitch(value);
 		}
-		Vector newVector = VectorMath.fromYawAndPitch(yaw, pitch).multiply(vector.length());
-		VectorMath.copyVector(vector, newVector);
+		Vector newVector = fromYawAndPitch(yaw, pitch).multiply(vector.length());
+		vector.copy(newVector);
 	}
 
 	private static float normalizeYaw(float yaw) {
@@ -254,14 +252,13 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 		return -pitch;
 	}
 
-	private static float fromSkriptYaw(float yaw) {
+	public static float fromSkriptYaw(float yaw) {
 		return yaw > 270
 			? yaw - 270
 			: yaw + 90;
 	}
 
-	private static float fromSkriptPitch(float pitch) {
+	public static float fromSkriptPitch(float pitch) {
 		return -pitch;
 	}
-
 }

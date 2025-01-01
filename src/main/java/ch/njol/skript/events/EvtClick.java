@@ -1,6 +1,15 @@
 package ch.njol.skript.events;
 
+import ch.njol.skript.Skript;
+import ch.njol.skript.aliases.ItemType;
+import ch.njol.skript.bukkitutil.ClickEventTracker;
+import ch.njol.skript.classes.data.DefaultComparators;
+import ch.njol.skript.entity.EntityData;
+import ch.njol.skript.lang.Literal;
+import ch.njol.skript.lang.SkriptEvent;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Predicate;
+import ch.njol.util.coll.CollectionUtils;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.ArmorStand;
@@ -17,18 +26,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.comparator.Relation;
-
-import ch.njol.skript.Skript;
-import ch.njol.skript.aliases.ItemType;
-import ch.njol.skript.bukkitutil.ClickEventTracker;
-import ch.njol.skript.classes.data.DefaultComparators;
-import ch.njol.skript.entity.EntityData;
-import ch.njol.skript.lang.Literal;
-import ch.njol.skript.lang.SkriptEvent;
-import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.util.coll.CollectionUtils;
-
-import java.util.function.Predicate;
 
 public class EvtClick extends SkriptEvent {
 
@@ -109,10 +106,10 @@ public class EvtClick extends SkriptEvent {
 	public boolean check(Event event) {
 		Block block;
 		Entity entity;
-		
+
 		if (event instanceof PlayerInteractEntityEvent interactEntityEvent) {
 			Entity clicked = interactEntityEvent.getRightClicked();
-			
+
 			// Usually, don't handle these events
 			if (interactEntityEvent instanceof PlayerInteractAtEntityEvent) {
 				// But armor stands are an exception
@@ -146,13 +143,13 @@ public class EvtClick extends SkriptEvent {
 			}
 			if ((this.click & click) == 0)
 				return false; // We don't want to handle this kind of events
-			
+
 			EquipmentSlot hand = interactEvent.getHand();
 			assert hand != null; // Not PHYSICAL interaction
 			if (!interactTracker.checkEvent(interactEvent.getPlayer(), interactEvent, hand)) {
 				return false; // Not first event this tick
 			}
-			
+
 			block = interactEvent.getClickedBlock();
 			entity = null;
 		} else {
@@ -160,55 +157,36 @@ public class EvtClick extends SkriptEvent {
 			return false;
 		}
 
-		if (tools != null && !tools.check(event, new Predicate<ItemType>() {
-			@Override
-			public boolean test(final ItemType t) {
-				if (event instanceof PlayerInteractEvent) {
-					return t.isOfType(((PlayerInteractEvent) event).getItem());
-				} else { // PlayerInteractEntityEvent doesn't have item associated with it
-					PlayerInventory invi = ((PlayerInteractEntityEvent) event).getPlayer().getInventory();
-					ItemStack item = ((PlayerInteractEntityEvent) event).getHand() == EquipmentSlot.HAND
-							? invi.getItemInMainHand() : invi.getItemInOffHand();
-					return t.isOfType(item);
-				}
+		Predicate<ItemType> checker = itemType -> {
+			if (event instanceof PlayerInteractEvent interactEvent) {
+				return itemType.isOfType(interactEvent.getItem());
+			} else {
+				PlayerInventory invi = ((PlayerInteractEntityEvent) event).getPlayer().getInventory();
+				ItemStack item = ((PlayerInteractEntityEvent) event).getHand() == EquipmentSlot.HAND
+					? invi.getItemInMainHand() : invi.getItemInOffHand();
+				return itemType.isOfType(item);
 			}
 		};
 
 		if (tools != null && !tools.check(event, checker))
 			return false;
-<<<<<<<
 
-=======
-		}
-
->>>>>>>
 		if (type != null) {
-<<<<<<<
 			BlockData blockDataCheck = block != null ? block.getBlockData() : null;
-			return type.check(event, new Checker<Object>() {
-=======
-			return type.check(event, new Predicate<Object>() {
->>>>>>>
-				@Override
-<<<<<<<
-				public boolean check(Object object) {
-=======
-				public boolean test(final Object o) {
->>>>>>>
-					if (entity != null) {
-						if (object instanceof EntityData<?> entityData) {
-							return entityData.isInstance(entity);
-						} else {
-							Relation compare = DefaultComparators.entityItemComparator.compare(EntityData.fromEntity(entity), (ItemType) object);
-							return Relation.EQUAL.isImpliedBy(compare);
-						}
-					} else if (object instanceof ItemType itemType) {
-						return itemType.isOfType(block);
-					} else if (blockDataCheck != null && object instanceof BlockData blockData)  {
-						return blockDataCheck.matches(blockData);
+			return type.check(event, (Predicate<Object>) object -> {
+				if (entity != null) {
+					if (object instanceof EntityData<?> entityData) {
+						return entityData.isInstance(entity);
+					} else {
+						Relation compare = DefaultComparators.entityItemComparator.compare(EntityData.fromEntity(entity), (ItemType) object);
+						return Relation.EQUAL.isImpliedBy(compare);
 					}
-					return false;
+				} else if (object instanceof ItemType itemType) {
+					return itemType.isOfType(block);
+				} else if (blockDataCheck != null && object instanceof BlockData blockData)  {
+					return blockDataCheck.matches(blockData);
 				}
+				return false;
 			});
 		}
 		return true;

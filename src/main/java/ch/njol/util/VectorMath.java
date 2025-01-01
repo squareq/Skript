@@ -1,22 +1,18 @@
 package ch.njol.util;
 
-import ch.njol.skript.effects.EffVectorRotateAroundAnother;
-import ch.njol.skript.effects.EffVectorRotateXYZ;
 import ch.njol.skript.expressions.ExprVectorCylindrical;
 import ch.njol.skript.expressions.ExprVectorFromYawAndPitch;
 import ch.njol.skript.expressions.ExprVectorSpherical;
 import ch.njol.skript.expressions.ExprYawPitch;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.ApiStatus;
 
-@Deprecated
-@ApiStatus.ScheduledForRemoval
+@Deprecated(forRemoval = true)
 public final class VectorMath {
 
 	public static final double PI = Math.PI;
 	public static final double HALF_PI = PI / 2;
 	public static final double DEG_TO_RAD = Math.PI / 180;
-	public static final double RAD_TO_DEG =  180 / Math.PI;
+	public static final double RAD_TO_DEG = 180 / Math.PI;
 
 	private VectorMath() {}
 
@@ -41,19 +37,53 @@ public final class VectorMath {
 	}
 
 	public static Vector rotX(Vector vector, double angle) {
-		return EffVectorRotateXYZ.rotX(vector, angle);
+		double sin = Math.sin(angle * DEG_TO_RAD);
+		double cos = Math.cos(angle * DEG_TO_RAD);
+		Vector vy = new Vector(0, cos, -sin);
+		Vector vz = new Vector(0, sin, cos);
+		Vector clone = vector.clone();
+		vector.setY(clone.dot(vy));
+		vector.setZ(clone.dot(vz));
+		return vector;
 	}
 
 	public static Vector rotY(Vector vector, double angle) {
-		return EffVectorRotateXYZ.rotY(vector, angle);
+		double sin = Math.sin(angle * DEG_TO_RAD);
+		double cos = Math.cos(angle * DEG_TO_RAD);
+		Vector vx = new Vector(cos, 0, sin);
+		Vector vz = new Vector(-sin, 0, cos);
+		Vector clone = vector.clone();
+		vector.setX(clone.dot(vx));
+		vector.setZ(clone.dot(vz));
+		return vector;
 	}
 
 	public static Vector rotZ(Vector vector, double angle) {
-		return EffVectorRotateXYZ.rotZ(vector, angle);
+		double sin = Math.sin(angle * DEG_TO_RAD);
+		double cos = Math.cos(angle * DEG_TO_RAD);
+		Vector vx = new Vector(cos, -sin, 0);
+		Vector vy = new Vector(sin, cos, 0);
+		Vector clone = vector.clone();
+		vector.setX(clone.dot(vx));
+		vector.setY(clone.dot(vy));
+		return vector;
 	}
 
 	public static Vector rot(Vector vector, Vector axis, double angle) {
-		return EffVectorRotateAroundAnother.rot(vector, axis, angle);
+		double sin = Math.sin(angle * DEG_TO_RAD);
+		double cos = Math.cos(angle * DEG_TO_RAD);
+		Vector a = axis.clone().normalize();
+		double ax = a.getX();
+		double ay = a.getY();
+		double az = a.getZ();
+		Vector rotx = new Vector(cos+ax*ax*(1-cos), ax*ay*(1-cos)-az*sin, ax*az*(1-cos)+ay*sin);
+		Vector roty = new Vector(ay*ax*(1-cos)+az*sin, cos+ay*ay*(1-cos), ay*az*(1-cos)-ax*sin);
+		Vector rotz = new Vector(az*ax*(1-cos)-ay*sin, az*ay*(1-cos)+ax*sin, cos+az*az*(1-cos));
+		double x = rotx.dot(vector);
+		double y = roty.dot(vector);
+		double z = rotz.dot(vector);
+		vector.setX(x).setY(y).setZ(z);
+		return vector;
 	}
 
 	public static float skriptYaw(float yaw) {
@@ -65,11 +95,11 @@ public final class VectorMath {
 	}
 
 	public static float fromSkriptYaw(float yaw) {
-		return ExprVectorFromYawAndPitch.fromSkriptYaw(yaw);
+		return ExprYawPitch.fromSkriptYaw(yaw);
 	}
 
 	public static float fromSkriptPitch(float pitch) {
-		return ExprVectorFromYawAndPitch.fromSkriptPitch(pitch);
+		return ExprYawPitch.fromSkriptPitch(pitch);
 	}
 
 	public static float wrapAngleDeg(float angle) {
