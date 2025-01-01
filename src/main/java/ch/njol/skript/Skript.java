@@ -65,6 +65,7 @@ import org.skriptlang.skript.bukkit.registration.BukkitRegistryKeys;
 import org.skriptlang.skript.bukkit.registration.BukkitSyntaxInfos;
 import org.junit.runner.notification.Failure;
 import org.skriptlang.skript.bukkit.SkriptMetrics;
+import org.skriptlang.skript.bukkit.tags.TagModule;
 import org.skriptlang.skript.bukkit.breeding.BreedingModule;
 import org.skriptlang.skript.bukkit.displays.DisplayModule;
 import org.skriptlang.skript.bukkit.furnace.FurnaceModule;
@@ -533,6 +534,7 @@ public final class Skript extends JavaPlugin implements Listener {
 			BreedingModule.load();
 			DisplayModule.load();
 			InputModule.load();
+			TagModule.load();
 			FurnaceModule.load();
 			LootTableModule.load();
 		} catch (final Exception e) {
