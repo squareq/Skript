@@ -13,7 +13,6 @@ import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 @Name("Vectors - Cylindrical Shape")
@@ -53,7 +52,7 @@ public class ExprVectorCylindrical extends SimpleExpression<Vector> {
 		Number height = this.height.getSingle(event);
 		if (radius == null || yaw == null || height == null)
 			return null;
-		return CollectionUtils.array(fromCylindricalCoordinates(radius.doubleValue(), fromSkriptYaw(yaw.floatValue()), height.doubleValue()));
+		return CollectionUtils.array(fromCylindricalCoordinates(radius.doubleValue(), ExprYawPitch.fromSkriptYaw(yaw.floatValue()), height.doubleValue()));
 	}
 
 	@Override
@@ -72,20 +71,12 @@ public class ExprVectorCylindrical extends SimpleExpression<Vector> {
 				yaw.toString(event, debug) + " and height " + height.toString(event, debug);
 	}
 
-	// TODO Mark as private next version after VectorMath deletion
-	@ApiStatus.Internal
 	public static Vector fromCylindricalCoordinates(double radius, double phi, double height) {
 		double r = Math.abs(radius);
 		double p = phi * DEG_TO_RAD;
 		double x = r * Math.cos(p);
 		double z = r * Math.sin(p);
 		return new Vector(x, height, z);
-	}
-
-	private static float fromSkriptYaw(float yaw) {
-		return yaw > 270
-			? yaw - 270
-			: yaw + 90;
 	}
 
 }

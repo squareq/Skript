@@ -13,7 +13,6 @@ import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 @Name("Vectors - Spherical Shape")
@@ -53,7 +52,8 @@ public class ExprVectorSpherical extends SimpleExpression<Vector> {
 		Number pitch = this.pitch.getSingle(event);
 		if (radius == null || yaw == null || pitch == null)
 			return null;
-		return CollectionUtils.array(fromSphericalCoordinates(radius.doubleValue(), fromSkriptYaw(yaw.floatValue()), pitch.floatValue() + 90));
+		return CollectionUtils.array(fromSphericalCoordinates(radius.doubleValue(),
+			ExprYawPitch.fromSkriptYaw(yaw.floatValue()), pitch.floatValue() + 90));
 	}
 
 	@Override
@@ -72,8 +72,6 @@ public class ExprVectorSpherical extends SimpleExpression<Vector> {
 				" and pitch" + pitch.toString(event, debug);
 	}
 
-	// TODO Mark as private next version after VectorMath deletion
-	@ApiStatus.Internal
 	public static Vector fromSphericalCoordinates(double radius, double theta, double phi) {
 		double r = Math.abs(radius);
 		double t = theta * DEG_TO_RAD;
@@ -83,12 +81,6 @@ public class ExprVectorSpherical extends SimpleExpression<Vector> {
 		double y = r * Math.cos(p);
 		double z = r * sinp * Math.sin(t);
 		return new Vector(x, y, z);
-	}
-
-	private static float fromSkriptYaw(float yaw) {
-		return yaw > 270
-			? yaw - 270
-			: yaw + 90;
 	}
 
 }

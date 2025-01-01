@@ -18,9 +18,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
-/**
- * @author Peter Güttinger
- */
 @Name("Region Contains")
 @Description({
 	"Checks whether a location is contained in a particular <a href='./classes.html#region'>region</a>.",
@@ -30,12 +27,13 @@ import java.util.function.Predicate;
 	"player is in the region {regions::3}",
 	"",
 	"on region enter:",
-	"\tregion contains {flags.%world%.red}",
-	"\tmessage \"The red flag is near!\""
+		"\tregion contains {flags.%world%.red}",
+		"\tmessage \"The red flag is near!\""
 })
 @Since("2.1")
 @RequiredPlugins("Supported regions plugin")
 public class CondRegionContains extends Condition {
+
 	static {
 		Skript.registerCondition(CondRegionContains.class,
 				"[[the] region] %regions% contain[s] %directions% %locations%", "%locations% (is|are) ([contained] in|part of) [[the] region] %regions%",
@@ -62,18 +60,9 @@ public class CondRegionContains extends Condition {
 	}
 
 	@Override
-	public boolean check(final Event e) {
-		return regions.check(e, new Predicate<Region>() {
-			@Override
-			public boolean test(final Region r) {
-				return locs.check(e, new Predicate<Location>() {
-					@Override
-					public boolean test(final Location l) {
-						return r.contains(l);
-					}
-				}, isNegated());
-			}
-		});
+	public boolean check(Event event) {
+		return regions.check(event,
+			region -> locs.check(event, region::contains, isNegated()));
 	}
 
 	@Override

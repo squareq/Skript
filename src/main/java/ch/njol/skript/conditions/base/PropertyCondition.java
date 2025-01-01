@@ -1,14 +1,16 @@
 package ch.njol.skript.conditions.base;
 
-import org.bukkit.event.Event;
-import org.jetbrains.annotations.Nullable;
-
 import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptAPIException;
 import ch.njol.skript.lang.Condition;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
+import org.bukkit.event.Event;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Predicate;
 import org.jetbrains.annotations.ApiStatus;
 import org.skriptlang.skript.registration.SyntaxInfo;
 import org.skriptlang.skript.registration.SyntaxRegistry;
@@ -39,7 +41,7 @@ import java.util.function.Predicate;
  * {@link PropertyCondition#register(Class, String, String)}, be aware that there can only be two patterns -
  * the first one needs to be a non-negated one and a negated one.
  */
-public abstract class PropertyCondition<T> extends Condition implements ch.njol.util.Checker<T>, Predicate<T> {
+public abstract class PropertyCondition<T> extends Condition implements Predicate<T> {
 
 	/**
 	 * A priority for {@link PropertyCondition}s.
@@ -179,8 +181,8 @@ public abstract class PropertyCondition<T> extends Condition implements ch.njol.
 	private Expression<? extends T> expr;
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+		//noinspection unchecked
 		expr = (Expression<? extends T>) expressions[0];
 		setNegated(matchedPattern == 1);
 		return true;
@@ -195,7 +197,7 @@ public abstract class PropertyCondition<T> extends Condition implements ch.njol.
 
 	@Override
 	public final boolean test(T value) {
-		return this.check(value);
+		return check(value);
 	}
 
 	protected abstract String getPropertyName();
@@ -237,6 +239,21 @@ public abstract class PropertyCondition<T> extends Condition implements ch.njol.
 				assert false;
 				return null;
 		}
+	}
+
+	@Override
+	public @NotNull Predicate<T> and(@NotNull Predicate<? super T> other) {
+		throw new UnsupportedOperationException("Combining property conditions is undefined behaviour");
+	}
+
+	@Override
+	public @NotNull Predicate<T> negate() {
+		throw new UnsupportedOperationException("Negating property conditions without setNegated is undefined behaviour");
+	}
+
+	@Override
+	public @NotNull Predicate<T> or(@NotNull Predicate<? super T> other) {
+		throw new UnsupportedOperationException("Combining property conditions is undefined behaviour");
 	}
 
 }

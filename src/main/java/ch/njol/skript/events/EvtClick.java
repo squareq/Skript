@@ -8,7 +8,6 @@ import ch.njol.skript.entity.EntityData;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.util.Predicate;
 import ch.njol.util.coll.CollectionUtils;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -26,6 +25,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.comparator.Relation;
+
+import java.util.function.Predicate;
 
 public class EvtClick extends SkriptEvent {
 
@@ -46,17 +47,17 @@ public class EvtClick extends SkriptEvent {
 		Skript.registerEvent("Click", EvtClick.class, eventTypes,
 				"[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] [on %-entitydata/itemtype/blockdata%] [(with|using|holding) %-itemtype%]",
 				"[(" + RIGHT + ":right|" + LEFT + ":left)(| |-)][mouse(| |-)]click[ing] (with|using|holding) %itemtype% on %entitydata/itemtype/blockdata%")
-				.description("Called when a user clicks on a block, an entity or air with or without an item in their hand.",
-						"Please note that rightclick events with an empty hand while not looking at a block are not sent to the server, so there's no way to detect them.",
-						"Also note that a leftclick on an entity is an attack and thus not covered by the 'click' event, but the 'damage' event.")
-				.examples("on click:",
-						"on rightclick holding a fishing rod:",
-						"on leftclick on a stone or obsidian:",
-						"on rightclick on a creeper:",
-						"on click with a sword:",
-						"on click on chest[facing=north]:",
-						"on click on campfire[lit=true]:")
-				.since("1.0, INSERT VERSION (blockdata)");
+			.description("Called when a user clicks on a block, an entity or air with or without an item in their hand.",
+				"Please note that rightclick events with an empty hand while not looking at a block are not sent to the server, so there's no way to detect them.",
+				"Also note that a leftclick on an entity is an attack and thus not covered by the 'click' event, but the 'damage' event.")
+			.examples("on click:",
+				"on rightclick holding a fishing rod:",
+				"on leftclick on a stone or obsidian:",
+				"on rightclick on a creeper:",
+				"on click with a sword:",
+				"on click on chest[facing=north]:",
+				"on click on campfire[lit=true]:")
+			.since("1.0, INSERT VERSION (blockdata)");
 	}
 
 	/**
@@ -91,10 +92,10 @@ public class EvtClick extends SkriptEvent {
 			} else if (click == ANY) {
 				if (Vehicle.class.isAssignableFrom(entitydata.getSingle().getType())) {
 					Skript.error("A leftclick on a vehicle entity is an attack and thus not covered by the 'click' event, but the 'vehicle damage' event. " +
-							"Change this event to a rightclick to fix this warning message.");
+						"Change this event to a rightclick to fix this warning message.");
 				} else {
 					Skript.error("A leftclick on an entity is an attack and thus not covered by the 'click' event, but the 'damage' event. " +
-							"Change this event to a rightclick to fix this warning message.");
+						"Change this event to a rightclick to fix this warning message.");
 				}
 			}
 		}

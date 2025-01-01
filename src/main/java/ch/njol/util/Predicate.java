@@ -5,12 +5,10 @@ import org.jetbrains.annotations.ApiStatus;
 import javax.annotation.Nullable;
 
 /**
- * @author Peter G�ttinger
- *
+ * @deprecated use {@link java.util.function.Predicate}
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 @FunctionalInterface
-@ApiStatus.ScheduledForRemoval
 public interface Predicate<T> extends java.util.function.Predicate<T> {
   boolean test(@Nullable T paramT);
 }

@@ -13,8 +13,9 @@ import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
+
+import static ch.njol.skript.expressions.ExprYawPitch.fromYawAndPitch;
 
 @Name("Vectors - Vector from Pitch and Yaw")
 @Description("Creates a vector from a yaw and pitch value.")
@@ -47,8 +48,8 @@ public class ExprVectorFromYawAndPitch extends SimpleExpression<Vector> {
 		Number skriptPitch = pitch.getSingle(event);
 		if (skriptYaw == null || skriptPitch == null)
 			return null;
-		float yaw = fromSkriptYaw(wrapAngleDeg(skriptYaw.floatValue()));
-		float pitch = fromSkriptPitch(wrapAngleDeg(skriptPitch.floatValue()));
+		float yaw = ExprYawPitch.fromSkriptYaw(wrapAngleDeg(skriptYaw.floatValue()));
+		float pitch = ExprYawPitch.fromSkriptPitch(wrapAngleDeg(skriptPitch.floatValue()));
 		return CollectionUtils.array(fromYawAndPitch(yaw, pitch));
 	}
 
@@ -67,18 +68,6 @@ public class ExprVectorFromYawAndPitch extends SimpleExpression<Vector> {
 		return "vector from yaw " + yaw.toString(event, debug) + " and pitch " + pitch.toString(event, debug);
 	}
 
-	private static Vector fromYawAndPitch(float yaw, float pitch) {
-		double y = Math.sin(pitch * DEG_TO_RAD);
-		double div = Math.cos(pitch * DEG_TO_RAD);
-		double x = Math.cos(yaw * DEG_TO_RAD);
-		double z = Math.sin(yaw * DEG_TO_RAD);
-		x *= div;
-		z *= div;
-		return new Vector(x,y,z);
-	}
-
-	// TODO Mark as private next version after VectorMath deletion
-	@ApiStatus.Internal
 	public static float wrapAngleDeg(float angle) {
 		angle %= 360f;
 		if (angle <= -180) {
@@ -88,20 +77,6 @@ public class ExprVectorFromYawAndPitch extends SimpleExpression<Vector> {
 		} else {
 			return angle;
 		}
-	}
-
-	// TODO Mark as private next version after VectorMath deletion
-	@ApiStatus.Internal
-	public static float fromSkriptYaw(float yaw) {
-		return yaw > 270
-			? yaw - 270
-			: yaw + 90;
-	}
-
-	// TODO Mark as private next version after VectorMath deletion
-	@ApiStatus.Internal
-	public static float fromSkriptPitch(float pitch) {
-		return -pitch;
 	}
 
 }

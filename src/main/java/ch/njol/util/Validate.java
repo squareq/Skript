@@ -1,11 +1,13 @@
 package ch.njol.util;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-@Deprecated
-@ApiStatus.ScheduledForRemoval
+
+/**
+ * use {@link com.google.common.base.Preconditions}
+ */
+@Deprecated(forRemoval = true)
 public final class Validate {
 
 	private Validate() {}

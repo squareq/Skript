@@ -11,10 +11,8 @@ import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.converter.Converter;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 
-/**
- * @author Peter Güttinger
- */
 public class Option<T> {
 
 	public final String key;
@@ -36,13 +34,7 @@ public class Option<T> {
 		@SuppressWarnings("unchecked")
 		final Class<T> c = (Class<T>) defaultValue.getClass();
 		if (c == String.class) {
-			parser = new Converter<String, T>() {
-				@SuppressWarnings("unchecked")
-				@Override
-				public T convert(final String s) {
-					return (T) s;
-				}
-			};
+			parser = (Converter<String, T>) s -> (T) s;
 		} else {
 			final ClassInfo<T> ci = Classes.getExactClassInfo(c);
 			final Parser<? extends T> p;
@@ -105,7 +97,7 @@ public class Option<T> {
 	public final T defaultValue() {
 		return defaultValue;
 	}
-	
+
 	public final boolean isOptional() {
 		return optional;
 	}

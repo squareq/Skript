@@ -22,6 +22,7 @@ import org.skriptlang.skript.lang.converter.Converter;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -136,7 +137,7 @@ public abstract class SimpleExpression<T> implements Expression<T> {
 	}
 
 	// TODO return a kleenean (UNKNOWN if 'values' is null or empty)
-	public static <T> boolean check(@Nullable T[] values, Predicate<? super T> checker, boolean invert, boolean and) {
+	public static <T> boolean check(T @Nullable [] values, Predicate<? super T> checker, boolean invert, boolean and) {
 		if (values == null)
 			return invert;
 		boolean hasElement = false;
@@ -279,7 +280,7 @@ public abstract class SimpleExpression<T> implements Expression<T> {
 		}
 		if (mustbeDefaultVar == null) {
 			Skript.exception(new SkriptAPIException("Default expression was null. If the default expression can be null, don't be using" +
-					" 'SimpleExpression#setTime(int, Expression<?>, Class<? extends Event>...)' instead use the setTime without an expression if null."));
+				" 'SimpleExpression#setTime(int, Expression<?>, Class<? extends Event>...)' instead use the setTime without an expression if null."));
 			return false;
 		}
 		if (!mustbeDefaultVar.isDefault())

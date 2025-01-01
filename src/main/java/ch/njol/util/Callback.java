@@ -5,9 +5,11 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.function.Function;
 
-@Deprecated
+/**
+ * @deprecated use {@link Function}
+ */
+@Deprecated(forRemoval = true)
 @FunctionalInterface
-@ApiStatus.ScheduledForRemoval
 public interface Callback<R, A> extends Function<A, R> {
 
 	@Nullable

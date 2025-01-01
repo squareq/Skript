@@ -7,15 +7,12 @@ import ch.njol.skript.lang.ParseContext;
 
 import java.util.function.Consumer;
 
-/**
- * @author Peter Güttinger
- */
 public class ParsedEntryValidator<T> extends EntryValidator {
 
 	private final Parser<? extends T> parser;
 	private final Consumer<T> setter;
 
-	public ParsedEntryValidator(final Parser<? extends T> parser, final Consumer<T> setter) {
+	public ParsedEntryValidator(Parser<? extends T> parser, Consumer<T> setter) {
 		assert parser != null;
 		assert setter != null;
 		this.parser = parser;
@@ -23,10 +20,10 @@ public class ParsedEntryValidator<T> extends EntryValidator {
 	}
 
 	@Override
-	public boolean validate(final Node node) {
+	public boolean validate(Node node) {
 		if (!super.validate(node))
 			return false;
-		final T t = parser.parse(((EntryNode) node).getValue(), ParseContext.CONFIG);
+		T t = parser.parse(((EntryNode) node).getValue(), ParseContext.CONFIG);
 		if (t == null)
 			return false;
 		setter.accept(t);

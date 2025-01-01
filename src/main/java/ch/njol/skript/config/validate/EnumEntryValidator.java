@@ -9,9 +9,7 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.config.EntryNode;
 import ch.njol.skript.config.Node;
 
-/**
- * @author Peter Güttinger
- */
+@Deprecated(forRemoval = true)
 public class EnumEntryValidator<E extends Enum<E>> extends EntryValidator {
 
 	private final Class<E> enumType;

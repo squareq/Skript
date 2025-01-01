@@ -1,16 +1,15 @@
 package ch.njol.skript.events;
 
-import org.bukkit.event.Event;
-import org.bukkit.event.weather.ThunderChangeEvent;
-import org.bukkit.event.weather.WeatherChangeEvent;
-import org.jetbrains.annotations.Nullable;
-
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.util.WeatherType;
 import ch.njol.util.coll.CollectionUtils;
+import org.bukkit.event.Event;
+import org.bukkit.event.weather.ThunderChangeEvent;
+import org.bukkit.event.weather.WeatherChangeEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
@@ -44,12 +43,7 @@ public class EvtWeatherChange extends SkriptEvent {
 			return false;
 		final boolean rain = e instanceof WeatherChangeEvent ? ((WeatherChangeEvent) e).toWeatherState() : ((ThunderChangeEvent) e).getWorld().hasStorm();
 		final boolean thunder = e instanceof ThunderChangeEvent ? ((ThunderChangeEvent) e).toThunderState() : ((WeatherChangeEvent) e).getWorld().isThundering();
-		return types.check(e, new Predicate<WeatherType>() {
-			@Override
-			public boolean test(final WeatherType t) {
-				return t.isWeather(rain, thunder);
-			}
-		});
+		return types.check(e, t -> t.isWeather(rain, thunder));
 	}
 
 	@Override

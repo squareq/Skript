@@ -12,9 +12,6 @@ import ch.njol.skript.config.Node;
 import ch.njol.skript.config.SectionNode;
 import ch.njol.skript.log.SkriptLogger;
 
-/**
- * @author Peter Güttinger
- */
 public class SectionValidator implements NodeValidator {
 
 	private final static class NodeInfo {

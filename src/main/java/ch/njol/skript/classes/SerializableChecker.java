@@ -5,9 +5,9 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.function.Predicate;
 
 /**
- * @author Peter Güttinger
+ * @deprecated use {@link Predicate}
  */
-@Deprecated
 @FunctionalInterface
-@ApiStatus.ScheduledForRemoval
+@Deprecated(forRemoval = true)
+@SuppressWarnings("removal")
 public interface SerializableChecker<T> extends ch.njol.util.Checker<T>, Predicate<T> {}

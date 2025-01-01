@@ -1,5 +1,6 @@
 package ch.njol.skript.events.bukkit;
 
+import ch.njol.skript.ScriptLoader;
 import ch.njol.skript.config.Config;
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
@@ -13,14 +14,14 @@ import java.util.List;
  * Please do not use bukkit api before checking {@link Bukkit#isPrimaryThread()}
  * @deprecated Use {@link ScriptLoader.ScriptPreInitEvent}.
  */
-@Deprecated
+@Deprecated(forRemoval = true)
 public class PreScriptLoadEvent extends Event {
 
     private final List<Config> scripts;
 
     public PreScriptLoadEvent(List<Config> scripts) {
         super(!Bukkit.isPrimaryThread());
-	    Preconditions.checkNotNull(scripts);
+        Preconditions.checkNotNull(scripts);
         this.scripts = scripts;
     }
 

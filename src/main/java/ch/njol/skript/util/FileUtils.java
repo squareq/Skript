@@ -1,5 +1,7 @@
 package ch.njol.skript.util;
 
+import org.skriptlang.skript.lang.converter.Converter;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,9 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-
-import org.skriptlang.skript.lang.converter.Converter;
-
 
 /**
  * @author Peter Güttinger
@@ -77,10 +76,12 @@ public abstract class FileUtils {
 	public static File move(final File from, final File to, final boolean replace) throws IOException {
 		if (!replace && to.exists())
 			throw new IOException("Can't rename " + from.getName() + " to " + to.getName() + ": The target file already exists");
-		if (replace)
+
+		if (replace) {
 			Files.move(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-		else
+		} else {
 			Files.move(from.toPath(), to.toPath(), StandardCopyOption.ATOMIC_MOVE);
+		}
 		return to;
 	}
 
@@ -90,7 +91,7 @@ public abstract class FileUtils {
 
 	/**
 	 * @param directory
-	 * @param renamer Renames files. Return null to leave a file as-is.
+	 * @param renamer   Renames files. Return null to leave a file as-is.
 	 * @return A collection of all changed files (with their new names)
 	 * @throws IOException If renaming one of the files caused an IOException. Some files might have been renamed already.
 	 */
@@ -117,7 +118,7 @@ public abstract class FileUtils {
 	/**
 	 * Saves the contents of an InputStream in a file.
 	 *
-	 * @param in The InputStream to read from. This stream will not be closed when this method returns.
+	 * @param in   The InputStream to read from. This stream will not be closed when this method returns.
 	 * @param file The file to save to. Will be replaced if it exists, or created if it doesn't.
 	 * @throws IOException
 	 */

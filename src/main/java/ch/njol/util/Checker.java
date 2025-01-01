@@ -1,12 +1,12 @@
 package ch.njol.util;
 
-import org.jetbrains.annotations.ApiStatus;
-
 import java.util.function.Predicate;
 
-@Deprecated
+/**
+ * @deprecated use {@link Predicate}
+ */
+@Deprecated(forRemoval = true)
 @FunctionalInterface
-@ApiStatus.ScheduledForRemoval
 public interface Checker<T> extends Predicate<T> {
 
 	boolean check(T o);

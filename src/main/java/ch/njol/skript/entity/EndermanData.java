@@ -1,16 +1,5 @@
 package ch.njol.skript.entity;
 
-import java.util.Arrays;
-import java.util.function.Predicate;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Enderman;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
-import org.jetbrains.annotations.Nullable;
-
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -18,6 +7,15 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.skript.localization.ArgsMessage;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.coll.CollectionUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Enderman;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.function.Predicate;
 
 @SuppressWarnings("deprecation")
 public class EndermanData extends EntityData<Enderman> {
@@ -72,13 +70,9 @@ public class EndermanData extends EntityData<Enderman> {
 
 	@Override
 	public boolean match(final Enderman entity) {
-		return hand == null || SimpleExpression.check(hand, new Predicate<ItemType>() {
-			@SuppressWarnings("null")
-			@Override
-			public boolean test(final @Nullable ItemType t) {
-				// TODO {Block/Material}Data -> Material conversion is not 100% accurate, needs a better solution
-				return t != null && t.isOfType(entity.getCarriedBlock().getMaterial());
-			}
+		return hand == null || SimpleExpression.check(hand, type -> {
+			// TODO {Block/Material}Data -> Material conversion is not 100% accurate, needs a better solution
+			return type != null && type.isOfType(entity.getCarriedBlock().getMaterial());
 		}, false, false);
 	}
 

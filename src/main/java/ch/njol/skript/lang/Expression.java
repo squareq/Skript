@@ -17,15 +17,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.converter.Converter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Spliterators;
-import java.util.function.Predicate;
+import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -71,7 +65,7 @@ public interface Expression<T> extends SyntaxElement, Debuggable, Loopable<T> {
 	 * The returned array must not contain any null values.
 	 * <p>
 	 * Do not use this in conditions, use {@link #check(Event, Predicate, boolean)} instead.
-	 *
+	 * 
 	 * @param event The event
 	 * @return An array of values of this expression which must neither be null nor contain nulls, and which must not be an internal array.
 	 */
@@ -92,7 +86,7 @@ public interface Expression<T> extends SyntaxElement, Debuggable, Loopable<T> {
 	 * @param event The event
 	 * @return A non-null stream of this expression's non-null values
 	 */
-	default Stream<@NotNull ? extends  T> stream(Event event) {
+	default Stream<? extends @NotNull T> stream(Event event) {
 		Iterator<? extends T> iterator = iterator(event);
 		if (iterator == null) {
 			return Stream.empty();
