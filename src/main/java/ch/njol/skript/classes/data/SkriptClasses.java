@@ -1,51 +1,44 @@
 package ch.njol.skript.classes.data;
 
-import ch.njol.skript.classes.*;
-import ch.njol.skript.lang.util.common.AnyAmount;
-import ch.njol.skript.lang.util.common.AnyContains;
-import ch.njol.skript.lang.util.common.AnyNamed;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Nullable;
-
+import ch.njol.skript.ScriptLoader;
 import ch.njol.skript.Skript;
 import ch.njol.skript.aliases.Aliases;
 import ch.njol.skript.aliases.ItemData;
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.bukkitutil.EnchantmentUtils;
 import ch.njol.skript.bukkitutil.ItemUtils;
+import ch.njol.skript.classes.*;
+import ch.njol.skript.config.Config;
+import ch.njol.skript.config.Node;
 import ch.njol.skript.expressions.base.EventValueExpression;
 import ch.njol.skript.lang.ParseContext;
+import ch.njol.skript.lang.function.DynamicFunctionReference;
 import ch.njol.skript.lang.util.SimpleLiteral;
+import ch.njol.skript.lang.util.common.AnyAmount;
+import ch.njol.skript.lang.util.common.AnyContains;
+import ch.njol.skript.lang.util.common.AnyNamed;
 import ch.njol.skript.localization.Noun;
 import ch.njol.skript.localization.RegexMessage;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.skript.util.Color;
-import ch.njol.skript.util.ColorRGB;
-import ch.njol.skript.util.Date;
-import ch.njol.skript.util.Direction;
-import ch.njol.skript.util.EnchantmentType;
-import ch.njol.skript.util.Experience;
-import ch.njol.skript.util.GameruleValue;
-import ch.njol.skript.util.SkriptColor;
-import ch.njol.skript.util.StructureType;
-import ch.njol.skript.util.Time;
-import ch.njol.skript.util.Timeperiod;
-import ch.njol.skript.util.Timespan;
-import ch.njol.skript.util.Utils;
-import ch.njol.skript.util.WeatherType;
+import ch.njol.skript.util.*;
 import ch.njol.skript.util.slot.Slot;
 import ch.njol.skript.util.visual.VisualEffect;
 import ch.njol.skript.util.visual.VisualEffects;
 import ch.njol.yggdrasil.Fields;
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.lang.script.Script;
+import org.skriptlang.skript.util.Executable;
 
-import java.io.NotSerializableException;
+import java.io.File;
 import java.io.StreamCorruptedException;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import java.util.Arrays;
 
 @SuppressWarnings("rawtypes")
 public class SkriptClasses {
@@ -699,6 +692,155 @@ public class SkriptClasses {
 				.since("2.5")
 				.serializer(new YggdrasilSerializer<GameruleValue>())
 		);
+
+		Classes.registerClass(new ClassInfo<>(Config.class, "config")
+			.user("configs?")
+			.name("Config")
+			.description("A configuration (or code) loaded by Skript, such as the config.sk or aliases.",
+				"Configs can be reloaded or navigated to find options.")
+			.usage("")
+			.examples("the skript config")
+			.since("INSERT VERSION")
+			.parser(new Parser<Config>() {
+
+				@Override
+				public boolean canParse(ParseContext context) {
+					return false;
+				}
+
+				@Override
+				public String toString(Config config, int flags) {
+					@Nullable File file = config.getFile();
+					if (file == null)
+						return config.getFileName();
+					return Skript.getInstance().getDataFolder().getAbsoluteFile().toPath()
+						.relativize(file.toPath().toAbsolutePath()).toString();
+				}
+
+				@Override
+				public String toVariableNameString(Config config) {
+					return this.toString(config, 0);
+				}
+			}));
+
+		Classes.registerClass(new ClassInfo<>(Node.class, "node")
+			.user("nodes?")
+			.name("Node")
+			.description("A node (entry) from a script config file.",
+				"This may have navigable children.")
+			.usage("")
+			.examples("the current script")
+			.since("INSERT VERSION")
+			.parser(new Parser<Node>() {
+
+				@Override
+				public boolean canParse(ParseContext context) {
+					return false;
+				}
+
+				@Override
+				public String toString(Node node, int flags) {
+					return node.getPath();
+				}
+
+				@Override
+				public String toVariableNameString(Node node) {
+					return this.toString(node, 0);
+				}
+
+			}));
+
+		Classes.registerClass(new ClassInfo<>(Script.class, "script")
+				.user("scripts?")
+				.name("Script")
+				.description("A script loaded by Skript.",
+					"Disabled scripts will report as being empty since their content has not been loaded.")
+				.usage("")
+				.examples("the current script")
+				.since("INSERT VERSION")
+				.parser(new Parser<Script>() {
+					final Path path = Skript.getInstance().getScriptsFolder().getAbsoluteFile().toPath();
+
+					@Override
+					public boolean canParse(final ParseContext context) {
+						return switch (context) {
+							case PARSE, COMMAND -> true;
+							default -> false;
+						};
+					}
+
+					@Override
+					@Nullable
+					public Script parse(final String name, final ParseContext context) {
+						return switch (context) {
+							case PARSE, COMMAND -> {
+								@Nullable File file = ScriptLoader.getScriptFromName(name);
+								if (file == null || !file.isFile())
+									yield null;
+								yield ScriptLoader.getScript(file);
+							}
+							default -> null;
+						};
+					}
+
+					@Override
+					public String toString(final Script script, final int flags) {
+						@Nullable File file = script.getConfig().getFile();
+						if (file == null)
+							return script.getConfig().getFileName();
+						return path.relativize(file.toPath().toAbsolutePath()).toString();
+					}
+					@Override
+					public String toVariableNameString(final Script script) {
+						return this.toString(script, 0);
+					}
+				}));
+
+		Classes.registerClass(new ClassInfo<>(Executable.class, "executable")
+			.user("executables?")
+			.name("Executable")
+			.description("Something that can be executed (run) and may accept arguments, e.g. a function.",
+					"This may also return a result.")
+			.examples("run {_function} with arguments 1 and true")
+			.since("INSERT VERSION"));
+
+		Classes.registerClass(new ClassInfo<>(DynamicFunctionReference.class, "function")
+			.user("functions?")
+			.name("Function")
+			.description("A function loaded by Skript.",
+					"This can be executed (with arguments) and may return a result.")
+			.examples("run {_function} with arguments 1 and true",
+					"set {_result} to the result of {_function}")
+			.since("INSERT VERSION")
+			.parser(new Parser<DynamicFunctionReference<?>>() {
+
+				@Override
+				public boolean canParse(final ParseContext context) {
+					return switch (context) {
+						case PARSE, COMMAND -> true;
+						default -> false;
+					};
+				}
+
+				@Override
+				@Nullable
+				public DynamicFunctionReference<?> parse(final String name, final ParseContext context) {
+					return switch (context) {
+						case PARSE, COMMAND -> DynamicFunctionReference.parseFunction(name);
+						default -> null;
+					};
+				}
+
+				@Override
+				public String toString(DynamicFunctionReference<?> function, final int flags) {
+					return function.toString();
+				}
+
+				@Override
+				public String toVariableNameString(DynamicFunctionReference<?> function) {
+					return this.toString(function, 0);
+				}
+			}));
 
 		Classes.registerClass(new AnyInfo<>(AnyNamed.class, "named")
 				.name("Any Named Thing")
