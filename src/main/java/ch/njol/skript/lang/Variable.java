@@ -4,6 +4,9 @@ import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
+import java.util.function.Predicate;
 import java.util.function.Function;
 
 import ch.njol.skript.Skript;
@@ -26,7 +29,6 @@ import ch.njol.skript.util.StringMode;
 import ch.njol.skript.util.Utils;
 import ch.njol.skript.variables.TypeHints;
 import ch.njol.skript.variables.Variables;
-import ch.njol.util.Checker;
 import ch.njol.util.Kleenean;
 import ch.njol.util.Pair;
 import ch.njol.util.StringUtils;
@@ -730,12 +732,12 @@ public class Variable<T> implements Expression<T>, KeyReceiverExpression<T>, Key
 	}
 
 	@Override
-	public boolean check(Event event, Checker<? super T> checker, boolean negated) {
+	public boolean check(Event event, Predicate<? super T> checker, boolean negated) {
 		return SimpleExpression.check(getAll(event), checker, negated, getAnd());
 	}
 
 	@Override
-	public boolean check(Event event, Checker<? super T> checker) {
+	public boolean check(Event event, Predicate<? super T> checker) {
 		return SimpleExpression.check(getAll(event), checker, false, getAnd());
 	}
 

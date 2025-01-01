@@ -18,9 +18,9 @@ import ch.njol.skript.entity.EntityData;
 import ch.njol.skript.lang.Condition;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.util.Checker;
 import ch.njol.util.Kleenean;
 
+import java.util.function.Predicate;
 @Name("Is of Type")
 @Description("Checks whether an item or an entity is of the given type. This is mostly useful for variables," +
 		" as you can use the general 'is' condition otherwise (e.g. 'victim is a creeper').")
@@ -28,7 +28,7 @@ import ch.njol.util.Kleenean;
 		"victim is of type {villager type}"})
 @Since("1.4")
 public class CondIsOfType extends Condition {
-	
+
 	static {
 		PropertyCondition.register(CondIsOfType.class, "of type[s] %itemtypes/entitydatas%", "itemstacks/entities");
 	}
@@ -37,7 +37,7 @@ public class CondIsOfType extends Condition {
 	private Expression<?> what;
 	@SuppressWarnings("NotNullFieldNotInitialized")
 	private Expression<?> types;
-	
+
 	@SuppressWarnings("null")
 	@Override
 	public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
@@ -46,14 +46,14 @@ public class CondIsOfType extends Condition {
 		setNegated(matchedPattern == 1);
 		return true;
 	}
-	
+
 	@Override
-	public boolean check(Event event) {
-		return what.check(event,
-				(Checker<Object>) o1 -> types.check(event,
-						(Checker<Object>) o2 -> {
-							if (o2 instanceof ItemType && o1 instanceof ItemStack) {
-								return ((ItemType) o2).isSupertypeOf(new ItemType((ItemStack) o1));
+	public boolean check(final Event e) {
+		return what.check(e,
+				(Predicate<Object>) o1 -> types.check(e,
+						(Predicate<Object>) o2 -> {
+							if (o2 instanceof ItemType && o1 instanceof ItemType) {
+								return ((ItemType) o2).isSupertypeOf((ItemType) o1);
 							} else if (o2 instanceof EntityData && o1 instanceof Entity) {
 								return ((EntityData<?>) o2).isInstance((Entity) o1);
 							} else if (o2 instanceof ItemType && o1 instanceof Entity) {
@@ -64,11 +64,11 @@ public class CondIsOfType extends Condition {
 						}),
 				isNegated());
 	}
-	
+
 	@Override
 	public String toString(@Nullable Event event, boolean debug) {
 		return PropertyCondition.toString(this, PropertyType.BE, event, debug, what,
 				"of " + (types.isSingle() ? "type " : "types ") + types.toString(event, debug));
 	}
-	
+
 }

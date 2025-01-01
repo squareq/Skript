@@ -8,12 +8,13 @@ import ch.njol.skript.SkriptAPIException;
 import ch.njol.skript.lang.Condition;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.util.Checker;
 import ch.njol.util.Kleenean;
 import org.jetbrains.annotations.ApiStatus;
 import org.skriptlang.skript.registration.SyntaxInfo;
 import org.skriptlang.skript.registration.SyntaxRegistry;
 import org.skriptlang.skript.util.Priority;
+
+import java.util.function.Predicate;
 
 /**
  * This class can be used for an easier writing of conditions that contain only one type in the pattern,
@@ -38,7 +39,7 @@ import org.skriptlang.skript.util.Priority;
  * {@link PropertyCondition#register(Class, String, String)}, be aware that there can only be two patterns -
  * the first one needs to be a non-negated one and a negated one.
  */
-public abstract class PropertyCondition<T> extends Condition implements Checker<T> {
+public abstract class PropertyCondition<T> extends Condition implements ch.njol.util.Checker<T>, Predicate<T> {
 
 	/**
 	 * A priority for {@link PropertyCondition}s.
@@ -190,8 +191,12 @@ public abstract class PropertyCondition<T> extends Condition implements Checker<
 		return expr.check(event, this, isNegated());
 	}
 
-	@Override
 	public abstract boolean check(T value);
+
+	@Override
+	public final boolean test(T value) {
+		return this.check(value);
+	}
 
 	protected abstract String getPropertyName();
 

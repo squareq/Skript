@@ -26,8 +26,9 @@ import ch.njol.skript.entity.EntityData;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptEvent;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.util.Checker;
 import ch.njol.util.coll.CollectionUtils;
+
+import java.util.function.Predicate;
 
 public class EvtClick extends SkriptEvent {
 
@@ -119,17 +120,17 @@ public class EvtClick extends SkriptEvent {
 				if (!(clicked instanceof ArmorStand))
 					return false;
 			}
-			
+
 			if (click == LEFT) // Lefts clicks on entities don't work
 				return false;
-			
+
 			// PlayerInteractAtEntityEvent called only once for armor stands
 			if (!(event instanceof PlayerInteractAtEntityEvent)) {
 				if (!interactTracker.checkEvent(interactEntityEvent.getPlayer(), interactEntityEvent, interactEntityEvent.getHand())) {
 					return false; // Not first event this tick
 				}
 			}
-			
+
 			entity = clicked;
 			block = null;
 		} else if (event instanceof PlayerInteractEvent interactEvent) {
@@ -159,25 +160,41 @@ public class EvtClick extends SkriptEvent {
 			return false;
 		}
 
-		Checker<ItemType> checker = itemType -> {
-			if (event instanceof PlayerInteractEvent interactEvent) {
-				return itemType.isOfType(interactEvent.getItem());
-			} else {
-				PlayerInventory invi = ((PlayerInteractEntityEvent) event).getPlayer().getInventory();
-				ItemStack item = ((PlayerInteractEntityEvent) event).getHand() == EquipmentSlot.HAND
-					? invi.getItemInMainHand() : invi.getItemInOffHand();
-				return itemType.isOfType(item);
+		if (tools != null && !tools.check(event, new Predicate<ItemType>() {
+			@Override
+			public boolean test(final ItemType t) {
+				if (event instanceof PlayerInteractEvent) {
+					return t.isOfType(((PlayerInteractEvent) event).getItem());
+				} else { // PlayerInteractEntityEvent doesn't have item associated with it
+					PlayerInventory invi = ((PlayerInteractEntityEvent) event).getPlayer().getInventory();
+					ItemStack item = ((PlayerInteractEntityEvent) event).getHand() == EquipmentSlot.HAND
+							? invi.getItemInMainHand() : invi.getItemInOffHand();
+					return t.isOfType(item);
+				}
 			}
 		};
 
 		if (tools != null && !tools.check(event, checker))
 			return false;
+<<<<<<<
 
+=======
+		}
+
+>>>>>>>
 		if (type != null) {
+<<<<<<<
 			BlockData blockDataCheck = block != null ? block.getBlockData() : null;
 			return type.check(event, new Checker<Object>() {
+=======
+			return type.check(event, new Predicate<Object>() {
+>>>>>>>
 				@Override
+<<<<<<<
 				public boolean check(Object object) {
+=======
+				public boolean test(final Object o) {
+>>>>>>>
 					if (entity != null) {
 						if (object instanceof EntityData<?> entityData) {
 							return entityData.isInstance(entity);
