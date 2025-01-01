@@ -14,8 +14,11 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import ch.njol.util.VectorMath;
 import ch.njol.util.coll.CollectionUtils;
+import org.bukkit.event.Event;
+import org.bukkit.util.Vector;
+import org.eclipse.jdt.annotation.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
 @Name("Vectors - Spherical Shape")
 @Description("Forms a 'spherical shaped' vector using yaw and pitch to manipulate the current point.")
@@ -26,6 +29,8 @@ import ch.njol.util.coll.CollectionUtils;
 })
 @Since("2.2-dev28")
 public class ExprVectorSpherical extends SimpleExpression<Vector> {
+
+	private static final double DEG_TO_RAD = Math.PI / 180;
 
 	static {
 		Skript.registerExpression(ExprVectorSpherical.class, Vector.class, ExpressionType.SIMPLE,
@@ -52,7 +57,7 @@ public class ExprVectorSpherical extends SimpleExpression<Vector> {
 		Number pitch = this.pitch.getSingle(event);
 		if (radius == null || yaw == null || pitch == null)
 			return null;
-		return CollectionUtils.array(VectorMath.fromSphericalCoordinates(radius.doubleValue(), VectorMath.fromSkriptYaw(yaw.floatValue()), pitch.floatValue() + 90));
+		return CollectionUtils.array(fromSphericalCoordinates(radius.doubleValue(), fromSkriptYaw(yaw.floatValue()), pitch.floatValue() + 90));
 	}
 
 	@Override
@@ -69,6 +74,25 @@ public class ExprVectorSpherical extends SimpleExpression<Vector> {
 	public String toString(@Nullable Event event, boolean debug) {
 		return "spherical vector with radius " + radius.toString(event, debug) + ", yaw " + yaw.toString(event, debug) +
 				" and pitch" + pitch.toString(event, debug);
+	}
+
+	// TODO Mark as private next version after VectorMath deletion
+	@ApiStatus.Internal
+	public static Vector fromSphericalCoordinates(double radius, double theta, double phi) {
+		double r = Math.abs(radius);
+		double t = theta * DEG_TO_RAD;
+		double p = phi * DEG_TO_RAD;
+		double sinp = Math.sin(p);
+		double x = r * sinp * Math.cos(t);
+		double y = r * Math.cos(p);
+		double z = r * sinp * Math.sin(t);
+		return new Vector(x, y, z);
+	}
+
+	private static float fromSkriptYaw(float yaw) {
+		return yaw > 270
+			? yaw - 270
+			: yaw + 90;
 	}
 
 }

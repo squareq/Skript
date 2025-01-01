@@ -1,14 +1,5 @@
 package ch.njol.skript.expressions;
 
-import ch.njol.skript.ServerPlatform;
-import ch.njol.skript.Skript;
-import ch.njol.skript.doc.RequiredPlugins;
-import ch.njol.util.VectorMath;
-import org.bukkit.Location;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Examples;
@@ -19,8 +10,10 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
+import org.bukkit.Location;
+import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
 @Name("Yaw / Pitch")
 @Description({
@@ -39,6 +32,9 @@ import org.jetbrains.annotations.Nullable;
 @Since("2.0, 2.2-dev28 (vector yaw/pitch), 2.9.0 (entity changers)")
 @RequiredPlugins("Paper 1.19+ (player changers)")
 public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
+
+	private static final double DEG_TO_RAD = Math.PI / 180;
+	private static final double RAD_TO_DEG =  180 / Math.PI;
 
 	static {
 		register(ExprYawPitch.class, Float.class, "(:yaw|pitch)", "entities/locations/vectors");
@@ -68,10 +64,10 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 					? normalizeYaw(location.getYaw())
 					: location.getPitch();
 		} else if (object instanceof Vector) {
-			Vector vector = (Vector) object;
-			return usesYaw
-					? VectorMath.skriptYaw((VectorMath.getYaw(vector)))
-					: VectorMath.skriptPitch(VectorMath.getPitch(vector));
+			Vector vector = ((Vector) object);
+			if (usesYaw)
+				return skriptYaw(getYaw(vector));
+			return skriptPitch(getPitch(vector));
 		}
 		return null;
 	}
@@ -174,26 +170,28 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 		}
 	}
 
-	private void changeForVector(Vector vector, float value, ChangeMode mode) {
-		float yaw = VectorMath.getYaw(vector);
-		float pitch = VectorMath.getPitch(vector);
+	private void changeVector(Vector vector, float n, ChangeMode mode) {
+		float yaw = getYaw(vector);
+		float pitch = getPitch(vector);
 		switch (mode) {
 			case REMOVE:
 				value = -value;
 				// $FALL-THROUGH$
 			case ADD:
-				if (usesYaw) {
-					yaw += value;
-				} else {
-					// Subtracting because of Minecraft's upside-down pitch.
-					pitch -= value;
-				}
+				if (usesYaw)
+					yaw += n;
+				else
+					pitch -= n; // Negative because of Minecraft's / Skript's upside down pitch
+				Vector newVector = fromYawAndPitch(yaw, pitch).multiply(vector.length());
+				vector.copy(newVector);
 				break;
 			case SET:
 				if (usesYaw)
-					yaw = VectorMath.fromSkriptYaw(value);
+					yaw = fromSkriptYaw(n);
 				else
-					pitch = VectorMath.fromSkriptPitch(value);
+					pitch = fromSkriptPitch(n);
+				newVector = fromYawAndPitch(yaw, pitch).multiply(vector.length());
+				vector.copy(newVector);
 		}
 		Vector newVector = VectorMath.fromYawAndPitch(yaw, pitch).multiply(vector.length());
 		VectorMath.copyVector(vector, newVector);
@@ -212,6 +210,58 @@ public class ExprYawPitch extends SimplePropertyExpression<Object, Float> {
 	@Override
 	protected String getPropertyName() {
 		return usesYaw ? "yaw" : "pitch";
+	}
+
+	// TODO Mark as private next version after VectorMath deletion
+	@ApiStatus.Internal
+	public static Vector fromYawAndPitch(float yaw, float pitch) {
+		double y = Math.sin(pitch * DEG_TO_RAD);
+		double div = Math.cos(pitch * DEG_TO_RAD);
+		double x = Math.cos(yaw * DEG_TO_RAD);
+		double z = Math.sin(yaw * DEG_TO_RAD);
+		x *= div;
+		z *= div;
+		return new Vector(x,y,z);
+	}
+
+	// TODO Mark as private next version after VectorMath deletion
+	@ApiStatus.Internal
+	public static float getYaw(Vector vector) {
+		if (((Double) vector.getX()).equals((double) 0) && ((Double) vector.getZ()).equals((double) 0)){
+			return 0;
+		}
+		return (float) (Math.atan2(vector.getZ(), vector.getX()) * RAD_TO_DEG);
+	}
+
+	// TODO Mark as private next version after VectorMath deletion
+	@ApiStatus.Internal
+	public static float getPitch(Vector vector) {
+		double xy = Math.sqrt(vector.getX() * vector.getX() + vector.getZ() * vector.getZ());
+		return (float) (Math.atan(vector.getY() / xy) * RAD_TO_DEG);
+	}
+
+	// TODO Mark as private next version after VectorMath deletion
+	@ApiStatus.Internal
+	public static float skriptYaw(float yaw) {
+		return yaw < 90
+			? yaw + 270
+			: yaw - 90;
+	}
+
+	// TODO Mark as private next version after VectorMath deletion
+	@ApiStatus.Internal
+	public static float skriptPitch(float pitch) {
+		return -pitch;
+	}
+
+	private static float fromSkriptYaw(float yaw) {
+		return yaw > 270
+			? yaw - 270
+			: yaw + 90;
+	}
+
+	private static float fromSkriptPitch(float pitch) {
+		return -pitch;
 	}
 
 }
