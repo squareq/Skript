@@ -1,21 +1,3 @@
-/**
- *   This file is part of Skript.
- *
- *  Skript is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Skript is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with Skript.  If not, see <http://www.gnu.org/licenses/>.
- *
- * Copyright Peter Güttinger, SkriptLang team and contributors
- */
 package ch.njol.skript.bukkitutil;
 
 import ch.njol.skript.Skript;
@@ -36,10 +18,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Miscellaneous static utility methods related to items.
@@ -220,14 +204,14 @@ public class ItemUtils {
 	 * @param object Object to convert
 	 * @return ItemStack from slot/itemtype
 	 */
-	@Nullable
-	public static ItemStack asItemStack(Object object) {
-		if (object instanceof ItemType)
-			return ((ItemType) object).getRandom();
-		else if (object instanceof Slot)
-			return ((Slot) object).getItem();
-		else if (object instanceof ItemStack)
-			return ((ItemStack) object);
+	public static @Nullable ItemStack asItemStack(@Nullable Object object) {
+		if (object instanceof ItemType itemType) {
+			return itemType.getRandom();
+		} else if (object instanceof Slot slot) {
+			return slot.getItem();
+		} else if (object instanceof ItemStack itemStack) {
+			return itemStack;
+		}
 		return null;
 	}
 	
@@ -379,4 +363,46 @@ public class ItemUtils {
 				return false;
 		}
 	}
+
+	/**
+	 * Applies a provided {@code Consumer} to the meta of the provided {@code ItemStack} and returns the updated {@code ItemStack} (with updated {@code ItemMeta}).
+	 *
+	 * @param itemStack the item whose meta is to be changed using the provided Consumer
+	 * @param metaChanger a consumer to update the meta of the provided ItemStack
+	 * @param <T>
+	 * @return the updated item
+	 */
+	public static <T extends ItemMeta> ItemStack changeItemMeta(@NotNull Class<T> metaClass, @NotNull ItemStack itemStack, @NotNull Consumer<T> metaChanger) {
+		ItemMeta originalMeta = itemStack.getItemMeta();
+		if (metaClass.isInstance(originalMeta)) {
+			//noinspection unchecked
+			T itemMeta = (T) originalMeta;
+			metaChanger.accept(itemMeta);
+			itemStack.setItemMeta(itemMeta);
+		}
+		return itemStack;
+	}
+
+	/**
+	 * Updates the provided object's ({@code Slot}, {@code ItemType}, {@code ItemStack}) {@link ItemMeta} by setting it to the provided {@code ItemStack}.
+	 *
+	 * @param object the object to update
+	 * @param itemMeta the {@link ItemMeta} to change to
+	 * @see #asItemStack(Object)
+	 */
+	public static void setItemMeta(Object object, @NotNull ItemMeta itemMeta) {
+		if (object instanceof Slot slot) {
+			ItemStack itemStack = slot.getItem();
+			if (itemStack == null)
+				return;
+			itemStack.setItemMeta(itemMeta);
+			slot.setItem(itemStack);
+		} else if (object instanceof ItemType itemType) {
+			itemType.setItemMeta(itemMeta);
+		} else if (object instanceof ItemStack itemStack) {
+			itemStack.setItemMeta(itemMeta);
+		}
+		throw new IllegalArgumentException("Object was not a Slot, ItemType or ItemStack.");
+	}
+
 }
