@@ -26,7 +26,7 @@ import org.skriptlang.skript.lang.structure.Structure;
 		broadcast "hello world"
 		# this is never run"""
 })
-@Since("INSERT VERSION")
+@Since("2.10")
 public class StructExample extends Structure {
 
 	public static final Priority PRIORITY = new Priority(550);

@@ -28,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 })
 @Examples({"on rightclick on an entity:",
 	"\tmessage \"This is a %type of clicked entity%!\""})
-@Since("1.4, 2.5.2 (potion effect), 2.7 (block datas), INSERT VERSION (enchantment type)")
+@Since("1.4, 2.5.2 (potion effect), 2.7 (block datas), 2.10 (enchantment type)")
 public class ExprTypeOf extends SimplePropertyExpression<Object, Object> {
 
 	static {
