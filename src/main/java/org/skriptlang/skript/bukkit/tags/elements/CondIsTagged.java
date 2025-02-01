@@ -53,7 +53,7 @@ public class CondIsTagged extends Condition {
 
 	@Override
 	public boolean check(Event event) {
-		Tag<Keyed>[] tags = this.tags.getArray(event);
+		Tag<Keyed>[] tags = this.tags.getAll(event);
 		if (tags.length == 0)
 			return isNegated();
 		boolean and = this.tags.getAnd();
