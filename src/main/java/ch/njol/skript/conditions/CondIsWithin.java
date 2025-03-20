@@ -16,6 +16,7 @@ import ch.njol.util.Kleenean;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.WorldBorder;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
@@ -47,12 +48,12 @@ import org.jetbrains.annotations.Nullable;
 	"if player is in world \"world\" and chunk at location(0, 0, 0):",
 		"\tgive player 1 diamond"
 })
-@Since("2.7, INSERT VERSION (multiple)")
+@Since("2.7, INSERT VERSION (world borders)")
 @RequiredPlugins("MC 1.17+ (within block)")
 public class CondIsWithin extends Condition {
 
 	static {
-		String validTypes = "entities/chunks/worlds";
+		String validTypes = "entities/chunks/worlds/worldborders";
 		if (Skript.methodExists(Block.class, "getCollisionShape"))
 			validTypes += "/blocks";
 
@@ -79,7 +80,7 @@ public class CondIsWithin extends Condition {
 			loc1 = (Expression<Location>) exprs[1];
 			loc2 = (Expression<Location>) exprs[2];
 		} else {
-			// within an entity/block/chunk/world
+			// within an entity/block/chunk/world/worldborder
 			withinLocations = false;
 			area = exprs[1];
 		}
@@ -118,7 +119,9 @@ public class CondIsWithin extends Condition {
 						return location.getChunk().equals(chunk);
 					} else if (object instanceof World world) {
 						return location.getWorld().equals(world);
-					}
+					} else if (object instanceof WorldBorder worldBorder) {
+            return worldBorder.isInside(location);
+          }
 					return false;
 				}, false, area.getAnd()),
 			isNegated());

@@ -12,7 +12,12 @@ test "within condition":
 	assert location(-10, 10, -10, "world") is not within {_chunk1} with "failed within chunk"
 
 	# worlds
-	assert location(10, 10, 10, "world") is within world("world") with "failed within world"
+	assert location(10, 10, 10, "world") is within test-world with "failed within world"
+
+	# worldborders
+	set {_border} to worldborder of test-world
+	assert {_loc1} is within {_border} with "failed within worldborder"
+	assert location(30000500, 0, 0, "world") is not within {_border} with "failed not within worldborder"
 
 	# blocks
 	set block at {_loc1} to stone
